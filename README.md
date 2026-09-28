@@ -1,19 +1,42 @@
 # Sport coach and doctor
 
-Agentic AI-assistant with access to Google Fitbit metrics
+Agentic AI-assistant with access to Google Fitbit metrics 
+
+## Implemented
+
+- **FastAPI backend** (`src/main.py`) with Postgres (migrations run on startup,
+  `data`/`app` schemas).
+- **LangGraph orchestrator** (`src/agents/graph.py`) — a graph with persistent state
+  (`AgentState`), currently a single node.
+- **Fitbit / Google Health agent** — prebuilt `create_agent` over `build_health_tools`
+  (`src/services/health_tools.py`): steps, heart rate, sleep, activity, resting HR/HRV.
+- **Conversations API** (`src/routers/chat.py`) — CRUD for conversations, history stored
+  in Postgres and reloaded on every call (frontend doesn't replay history itself).
+- **DB browse endpoints** (`src/routers/db.py`) — `GET /tables`, `GET /tables/{name}`.
+
+## Planned
+
+- **Doctor agent** — RAG over injury data (`data.parsed_sources`) +
+  human-in-the-loop (`interrupt`) to clarify the diagnosis before giving recommendations.
+- **Coach agent** — training plans (sports/running/gym); decide whether it calls the
+  Fitbit agent as a separate hop or a unified health-metrics pipeline.
+- **Top-level orchestrator routing** — the graph currently goes straight to `fitbit_agent`;
+  needs real routing between subagents + a fallback for direct answers.
+- **Temporal context** — passing dynamics between agents as structured series with
+  explicit deltas (`day-3: pain=6, day-0: pain=3, trend: improving`), not raw timestamps.
 
 ## Running the app
 
 1. Start Postgres (once; container persists across restarts):
    ```bash
-   docker run -d --name climbing-assistant-postgres \
+   docker run -d --name sport-assistant-postgres \
      -e POSTGRES_USER=<POSTGRESQL__USERNAME from .env> \
      -e POSTGRES_PASSWORD=<POSTGRESQL__PASSWORD from .env> \
-     -e POSTGRES_DB=climbing_assistant \
+     -e POSTGRES_DB=sport_assistant \
      -p 5432:5432 \
      postgres:16
    ```
-   If the container already exists, just start it again: `docker start climbing-assistant-postgres`.
+   If the container already exists, just start it again: `docker start sport-assistant-postgres`.
 2. Make sure `client_secret.json` and `token.json` exist at the repo root (Google Health OAuth — see `notebooks/fitbit_analysis.ipynb` for the one-time login flow).
 3. Run the server:
    ```bash
@@ -30,7 +53,7 @@ Agentic AI-assistant with access to Google Fitbit metrics
   ```bash
   lsof -ti:8000 | xargs kill
   ```
-- To stop Postgres (frees port 5432): `docker stop climbing-assistant-postgres` (add `docker rm` to delete the container entirely).
+- To stop Postgres (frees port 5432): `docker stop sport-assistant-postgres` (add `docker rm` to delete the container entirely).
 
 ## Testing
 

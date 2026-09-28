@@ -1,0 +1,27 @@
+# Backend-only compose. Frontend lives in a separate repo with its own compose.
+#
+# Run:    docker compose up --build
+# Stop:   docker compose down
+#
+# Publishes port 8000 on the host so the frontend container (or a local dev
+# server) can reach it via host.docker.internal:8000 / localhost:8000.
+
+services:
+  backend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: sport-assistant-backend
+    # Load LLM/DB/proxy credentials from .env in this repo.
+    env_file:
+      - .env
+    # Postgres runs on the host by default; `host.docker.internal` reaches it
+    # from inside the container. If Postgres runs elsewhere, override here.
+    environment:
+      - POSTGRESQL__HOST=host.docker.internal
+    ports:
+      - "8000:8000"
+    # Linux needs this to make host.docker.internal resolve to the host.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
