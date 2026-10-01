@@ -16,6 +16,7 @@ Agentic AI-assistant with access to Google Fitbit metrics
 
 ## Planned
 
+- **Injury Symptom Dataset** — will be released on huggingface/kaggle soon
 - **Doctor agent** — RAG over injury data (`data.parsed_sources`) +
   human-in-the-loop (`interrupt`) to clarify the diagnosis before giving recommendations.
 - **Coach agent** — training plans (sports/running/gym); decide whether it calls the
