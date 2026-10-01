@@ -146,6 +146,18 @@ async def get_resting_hr_and_hrv(
 
 def build_health_tools(api: GoogleHealthApi) -> list:
     @tool
+    async def get_current_time_tool() -> dict:
+        """Current local date and time in the user's timezone.
+
+        Call this first whenever the user refers to a relative period
+        ('yesterday', 'last night', 'this week', 'last 7 days', etc.) to
+        compute accurate start_time/end_time arguments for the other tools.
+        Returns an ISO-8601 timestamp with the UTC offset and the timezone key.
+        """
+        now = datetime.now(LOCAL_TZ)
+        return {"now": now.isoformat(), "timezone": str(LOCAL_TZ)}
+
+    @tool
     async def get_steps_tool(start_time: str | None = None, end_time: str | None = None) -> dict:
         """Step counts within a time range (defaults to the last 24 hours)."""
         return await get_steps(api, start_time, end_time)
@@ -171,6 +183,7 @@ def build_health_tools(api: GoogleHealthApi) -> list:
         return await get_resting_hr_and_hrv(api, start_date, end_date)
 
     return [
+        get_current_time_tool,
         get_steps_tool,
         get_heart_rate_tool,
         get_sleep_tool,
